@@ -244,10 +244,10 @@
 
                 // --- CALENDAR GENERATION ---
                 const entriesByMonth = {};
-                const workoutDates = new Set();
+                const workoutsByDay = new Map(); // Using a Map to store workouts for each day
+
                 history.forEach(entry => {
                     const d = new Date(entry.date);
-                    // Use UTC date to be consistent with how dates are displayed in history
                     const year = d.getUTCFullYear();
                     const month = d.getUTCMonth();
                     const day = d.getUTCDate();
@@ -256,7 +256,14 @@
                     if (!entriesByMonth[monthKey]) {
                         entriesByMonth[monthKey] = new Date(year, month, 1);
                     }
-                    workoutDates.add(`${year}-${month}-${day}`);
+
+                    const dayKey = `${year}-${month}-${day}`;
+                    if (!workoutsByDay.has(dayKey)) {
+                        workoutsByDay.set(dayKey, []);
+                    }
+                    // Add a more descriptive name for the workout type
+                    const workoutText = entry.type === 'classpass' ? 'ClassPass' : 'Solidcore';
+                    workoutsByDay.get(dayKey).push(workoutText);
                 });
 
                 const sortedMonthKeys = Object.keys(entriesByMonth).sort((a, b) => {
@@ -291,8 +298,18 @@
                                 calendarHtml += '<td class="empty-day"></td>';
                             } else {
                                 const dayKey = `${year}-${month}-${date}`;
-                                const hasClass = workoutDates.has(dayKey) ? 'day-with-class' : '';
-                                calendarHtml += `<td><div class="calendar-day ${hasClass}">${date}</div></td>`;
+                                const workouts = workoutsByDay.get(dayKey);
+                                const hasClass = workouts ? 'day-with-class' : '';
+                                let workoutHtml = '';
+                                if (workouts) {
+                                    // Create a small snippet for each workout
+                                    workoutHtml = workouts.map(w => `<span class="workout-type">${w}</span>`).join('');
+                                }
+
+                                calendarHtml += `<td><div class="calendar-day ${hasClass}">
+                                    <div class="day-number">${date}</div>
+                                    ${workoutHtml}
+                                </div></td>`;
                                 date++;
                             }
                         }
