@@ -15,6 +15,7 @@
             const backBtns = document.querySelectorAll('.back-btn');
             const logButton = document.getElementById('log-button');
             const usageInput = document.getElementById('usage-input');
+            const dateInput = document.getElementById('date-input');
             const classpassRemainingEl = document.getElementById('classpass-remaining');
             const solidcoreRemainingEl = document.getElementById('solidcore-remaining');
             const cycleDatesEl = document.getElementById('cycle-dates');
@@ -126,11 +127,14 @@
                 }
                 historyListContainer.innerHTML = `<ul>${history.map(entry => {
                     const entryText = entry.type === 'classpass' ? 'ClassPass credits' : 'Solidcore classes';
+                    const d = new Date(entry.date);
+                    // Using UTC date components to avoid timezone-related "off-by-one" errors.
+                    const displayDate = `${d.getUTCMonth() + 1}/${d.getUTCDate()}/${d.getUTCFullYear()}`;
                     return `
                     <li class="history-item" data-id="${entry.id}">
                         <div class="history-item-info">
                             <span><strong>${entry.amount}</strong> ${entryText}</span>
-                            <small>${new Date(entry.date).toLocaleString()}</small>
+                            <small>${displayDate}</small>
                         </div>
                         <div class="history-item-actions">
                             <button class="edit-btn" data-id="${entry.id}">✏️</button>
@@ -144,20 +148,28 @@
             function logUsage() {
                 const type = document.querySelector('input[name="workout-type"]:checked').value;
                 const amount = parseInt(usageInput.value, 10);
+                const dateValue = dateInput.value;
 
                 if (!amount || amount <= 0) {
                     alert("Please enter a valid positive number.");
                     return;
                 }
+                if (!dateValue) {
+                    alert("Please select a date.");
+                    return;
+                }
+                const entryDate = new Date(dateValue + 'T00:00:00').toISOString();
+
                 const history = getHistory();
                 history.push({
                     id: Date.now(), // Unique ID for editing/deleting
-                    date: new Date().toISOString(),
+                    date: entryDate,
                     type: type,
                     amount: amount,
                 });
                 saveHistory(history);
                 usageInput.value = '';
+                dateInput.valueAsDate = new Date();
             }
 
             // FIX: This function now correctly handles all actions.
@@ -178,6 +190,7 @@
                 } else if (target.matches('.edit-btn')) {
                     const history = getHistory();
                     const entry = history.find(e => e.id === entryId);
+                    const entryDate = new Date(entry.date).toISOString().split('T')[0];
                     listItem.innerHTML = `
                         <div class="history-item-info">
                             <input type="number" value="${entry.amount}" class="edit-amount-input" style="width: 50px; padding: 5px;"/>
@@ -185,6 +198,7 @@
                                 <option value="classpass" ${entry.type === 'classpass' ? 'selected' : ''}>ClassPass</option>
                                 <option value="solidcore" ${entry.type === 'solidcore' ? 'selected' : ''}>Solidcore</option>
                             </select>
+                            <input type="date" value="${entryDate}" class="edit-date-input" style="padding: 5px;"/>
                         </div>
                         <div class="history-item-actions">
                             <button class="save-btn" data-id="${entry.id}">✅</button>
@@ -192,9 +206,14 @@
                 } else if (target.matches('.save-btn')) {
                     const newAmount = parseInt(listItem.querySelector('.edit-amount-input').value, 10);
                     const newType = listItem.querySelector('.edit-type-select').value;
+                    const newDate = listItem.querySelector('.edit-date-input').value;
                     
                     if (!newAmount || newAmount <= 0) {
                         alert("Please enter a valid positive number.");
+                        return;
+                    }
+                    if (!newDate) {
+                        alert("Please select a date.");
                         return;
                     }
                     let history = getHistory();
@@ -202,6 +221,7 @@
                     if (entryIndex > -1) {
                         history[entryIndex].amount = newAmount;
                         history[entryIndex].type = newType;
+                        history[entryIndex].date = new Date(newDate + 'T00:00:00').toISOString();
                         saveHistory(history);
                         renderHistoryPage(); // Re-render after saving
                     }
@@ -301,5 +321,6 @@
             // --- INITIALIZE THE APP ---
             showPage(inputPage); // Start on the input page
             updateUI();
+            dateInput.valueAsDate = new Date();
         });
     
