@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Tracker</title>
+    <link rel="stylesheet" href="workout.css">
+</head>
+<body>
+    <!-- A container for the top-right page switching buttons -->
+    <div style="position: fixed; top: 10px; right: 10px; display: flex; gap: 10px; z-index: 100;">
+        <button id="view-history-btn">View History</button>
+        <button id="view-wrapped-btn">View Wrapped</button>
+    </div>
+
+    <!-- Main container for the input page -->
+    <main id="input-page">
+        <h1>Log a Workout</h1>
+        
+        <!-- Toggle to select workout type -->
+        <div class="toggle-container">
+            <input type="radio" id="type-classpass" name="workout-type" value="classpass" checked>
+            <label for="type-classpass">ClassPass</label>
+            <input type="radio" id="type-solidcore" name="workout-type" value="solidcore">
+            <label for="type-solidcore">Solidcore</label>
+        </div>
+
+        <!-- Input for number of credits/classes -->
+        <div class="input-group">
+            <input type="number" id="usage-input" placeholder="Enter amount..." min="1">
+            <button id="log-button">Log It!</button>
+        </div>
+        
+        <!-- Real-time display of remaining counts -->
+        <div class="status-container">
+            <div class="status-box">
+                <h2>ClassPass Left</h2>
+                <p id="classpass-remaining">26</p>
+            </div>
+            <div class="status-box">
+                <h2>Solidcore Left</h2>
+                <p id="solidcore-remaining">5</p>
+            </div>
+        </div>
+
+        <!-- Cycle Progress Bar -->
+        <div class="progress-container">
+            <h3>Cycle Ends In...</h3>
+            <p id="cycle-dates"></p>
+            <div class="progress-bar-outer">
+                <div id="progress-bar-inner"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Container for the "Wrapped" summary page, hidden by default -->
+    <main id="wrapped-page" style="display: none;">
+        <h1>Your Workout Wrapped</h1>
+        <div id="wrapped-content">
+            <!-- JavaScript will generate the summary here -->
+        </div>
+        <button class="back-btn">Go Back</button>
+    </main>
+
+    <!-- Container for the new "History" page, hidden by default -->
+    <main id="history-page" style="display: none;">
+        <h1>Workout History</h1>
+        <div id="history-list-container">
+            <!-- JS will render the list of entries here -->
+        </div>
+        <button class="back-btn">Go Back</button>
+    </main>
+    <script src="workout.js"></script>
+</body>
+</html>
