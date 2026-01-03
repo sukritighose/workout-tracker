@@ -230,10 +230,80 @@
             
             function generateWrapped() {
                 const history = getHistory();
+                const calendarContainer = document.getElementById('calendar-container');
+                const statsContainer = document.getElementById('stats-container');
+
+                // Clear previous content
+                calendarContainer.innerHTML = '';
+                statsContainer.innerHTML = '';
+
                 if (history.length === 0) {
-                    wrappedContentEl.innerHTML = "<p>No workouts logged yet. Start logging to see your summary!</p>";
+                    statsContainer.innerHTML = "<p>No workouts logged yet. Start logging to see your summary!</p>";
                     return;
                 }
+
+                // --- CALENDAR GENERATION ---
+                const entriesByMonth = {};
+                const workoutDates = new Set();
+                history.forEach(entry => {
+                    const d = new Date(entry.date);
+                    // Use UTC date to be consistent with how dates are displayed in history
+                    const year = d.getUTCFullYear();
+                    const month = d.getUTCMonth();
+                    const day = d.getUTCDate();
+                    
+                    const monthKey = `${year}-${month}`;
+                    if (!entriesByMonth[monthKey]) {
+                        entriesByMonth[monthKey] = new Date(year, month, 1);
+                    }
+                    workoutDates.add(`${year}-${month}-${day}`);
+                });
+
+                const sortedMonthKeys = Object.keys(entriesByMonth).sort((a, b) => {
+                    const [yearA, monthA] = a.split('-').map(Number);
+                    const [yearB, monthB] = b.split('-').map(Number);
+                    if (yearA !== yearB) return yearB - yearA;
+                    return monthB - monthA;
+                });
+                
+                sortedMonthKeys.forEach(monthKey => {
+                    const dateForMonth = entriesByMonth[monthKey];
+                    const year = dateForMonth.getFullYear();
+                    const month = dateForMonth.getMonth();
+
+                    const monthName = dateForMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+                    let calendarHtml = `<div class="calendar-header">${monthName}</div>`;
+                    calendarHtml += '<table class="calendar">';
+                    calendarHtml += '<thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead>';
+                    calendarHtml += '<tbody>';
+
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    
+                    let date = 1;
+                    for (let i = 0; i < 6; i++) {
+                        calendarHtml += '<tr>';
+                        for (let j = 0; j < 7; j++) {
+                            if (i === 0 && j < firstDay) {
+                                calendarHtml += '<td class="empty-day"></td>';
+                            } else if (date > daysInMonth) {
+                                calendarHtml += '<td class="empty-day"></td>';
+                            } else {
+                                const dayKey = `${year}-${month}-${date}`;
+                                const hasClass = workoutDates.has(dayKey) ? 'day-with-class' : '';
+                                calendarHtml += `<td><div class="calendar-day ${hasClass}">${date}</div></td>`;
+                                date++;
+                            }
+                        }
+                        calendarHtml += '</tr>';
+                        if (date > daysInMonth) {
+                            break;
+                        }
+                    }
+                    calendarHtml += '</tbody></table>';
+                    calendarContainer.innerHTML += calendarHtml;
+                });
 
                 // --- YTD Calculation ---
                 const ytdStartDate = new Date('2025-12-22T00:00:00');
@@ -297,8 +367,8 @@
                     }).join('');
                 }
                 
-                // Prepend YTD stats to the cycle breakdown
-                wrappedContentEl.innerHTML = ytdHtml + cyclesHtml;
+                // Append YTD and cycle stats to statsContainer
+                statsContainer.innerHTML = ytdHtml + cyclesHtml;
             }
 
             // --- EVENT LISTENERS ---

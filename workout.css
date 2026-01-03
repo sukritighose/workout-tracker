@@ -255,4 +255,54 @@
             padding-bottom: 0;
             border-bottom: none;
         }
-    
+
+/* Calendar styles */
+#calendar-container {
+    margin-bottom: 25px;
+}
+
+.calendar {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.calendar-header {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.calendar th {
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary-color);
+    padding: 10px 0;
+}
+
+.calendar td {
+    text-align: center;
+    padding: 5px;
+    height: 40px;
+    border: 1px solid #f0f2f5;
+    vertical-align: middle;
+}
+
+.calendar-day {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+}
+
+.day-with-class {
+    background-color: var(--primary-color-light);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.empty-day {
+    background-color: transparent;
+}
